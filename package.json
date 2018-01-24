@@ -16,6 +16,7 @@
     "cors": "^2.8.4",
     "express": "^4.15.4",
     "express-handlebars": "^3.0.0",
+    "express-mysql-session": "^1.2.3",
     "express-session": "^1.15.5",
     "fs": "0.0.1-security",
     "method-override": "^2.3.9",

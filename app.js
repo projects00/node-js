@@ -13,8 +13,15 @@ const fs = require('fs');
 const bycrypt = require('bcryptjs');
 const local = require('passport-local').Strategy;
 const app = express();
-
-
+var MySQLStore=require('express-mysql-session')(session);
+var options = {
+     host: 'mysql7002.site4now.net',
+    user: 'loaqey4v_nandhu',
+    password: 'nandhu',
+    database: 'loaqey4v_testnkdb'
+ 
+};
+var sessionStore = new MySQLStore(options);
 const connect = mysql.createPool({
     host: 'mysql7002.site4now.net',
     user: 'loaqey4v_nandhu',
@@ -73,11 +80,16 @@ app.use(bodyParser.json());
 app.use(cookie());
 app.use(session({secret:'secret',
 resave:false,
-saveUninitialized:false
+saveUninitialized:true,
+ store: sessionStore
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-
+passport.use(new local(
+  function(userid, done) {
+    console.log('local strategy called with: %s', userid);
+    return done(null, {userid});
+  }));
 // cross origin mioddleware
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -732,12 +744,20 @@ bycrypt.genSalt(10,(err,salt)=>{
                     "password" :password,
                     "isactive": 0
                 }
-                connection.query(query2,user,(err,result)=>{
+                connection.query(query2,user,(err,results)=>{
                     if(err){
                         connection.release();
                         
                     }
-                    res.json(result);
+                    
+					   req.login(results.insertId,function(error){
+                            console.log("sdfsd"+req.user);
+                            console.log(req.isAuthenticated());
+                            if(error)
+                                res.json(error);
+                            
+                        });
+                    res.json(results);
                 })
             }else{
                 res.json("user already exist");
@@ -751,6 +771,8 @@ bycrypt.genSalt(10,(err,salt)=>{
 })
 
 app.post('/login', (req, res,next) => {
+    console.log(req.user);
+ console.log(req.isAuthenticated());
   passport.authenticate('local',{
     successRedirect: '/logged',
     failureRedirect: '/failure',
@@ -775,7 +797,7 @@ res.json({msg:"login failed"});
 
 
 passport.use( new local({
-    usernameField:'username',
+    userid:'username',
     passwordField:'password'
 },(username,password)=>{
     var user ={
@@ -789,11 +811,11 @@ passport.use( new local({
 
 
 
-passport.serializeUser((user,done)=>{
-    done(null,user.id);
+passport.serializeUser((userid,done)=>{
+    done(null,userid);
 })
-passport.deserializeUser((userId,done)=>{
-    done(null,user);
+passport.deserializeUser((userid,done)=>{
+    done(null,userid);
 })
 
 
