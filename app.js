@@ -797,7 +797,7 @@ res.json({msg:"login failed"});
 
 
 passport.use( new local({
-    userid:'username',
+    userid:'id',
     passwordField:'password'
 },(username,password)=>{
     var user ={
@@ -825,3 +825,23 @@ const port = process.env.PORT || 5000;
 app.listen(port, () => {
     console.log("Server started ...")
 }); 
+
+function isLoggedIn(req, res, next) {
+
+    // if user is authenticated in the session, carry on 
+    if (req.isAuthenticated())
+        return next();
+
+    res.json("not logged in");
+    // if they aren't redirect them to the home page
+   // res.redirect('/');
+}
+app.get('/logout', function(req, res) {
+        req.logout();
+        res.json("logged out");
+     //   res.redirect('/');
+    });
+
+        app.get('/profile', isLoggedIn, function(req, res) {
+         res.json("s working");
+    });
