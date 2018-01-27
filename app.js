@@ -750,14 +750,7 @@ bycrypt.genSalt(10,(err,salt)=>{
                         
                     }
                     
-					   req.login(results.insertId,function(error){
-                            console.log("sdfsd"+req.user);
-                            console.log(req.isAuthenticated());
-                            if(error)
-                                res.json(error);
-                            
-                        });
-                    res.json(results);
+			       res.json(results);
                 })
             }else{
                 res.json("user already exist");
