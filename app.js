@@ -770,17 +770,43 @@ bycrypt.genSalt(10,(err,salt)=>{
 
 })
 
-app.post('/login', (req, res,next) => {
-    console.log(req.user);
- console.log(req.isAuthenticated());
-  passport.authenticate('local',{
-    successRedirect: '/logged',
-    failureRedirect: '/failure',
-  })(req,res,next);
-});
+app.post('/login',(req,res)=>{
+    query = "select * from user where emailid = ?";
+password = req.body.password
+bycrypt.genSalt(10,(err,salt)=>{
+    bycrypt.hash(password,salt,(err,hash)=>{
+        password = hash
+    })
+})
+    connect.getConnection((err,connection)=>{
+        if(err){
+            connection.release();
+        }
+        console.log(req.body.email);
+        connection.query(query,[req.body.email],(err,row)=>{
+            if(row.length >0){
+                req.login(row[0].id,function(error){
+                            console.log("sdfsd"+req.user);
+                            console.log(req.isAuthenticated());
+                            if(error)
+                                res.json(error);
+                            
+                        });
+                    res.json(row[0]);
+              
+            }else{
+                res.json("user does not exist");
+            }
+        })
+        connection.release()
+    })
 
-app.get('/logged',(req,res)=>{
-  res.json({msg:"logged in"});
+
+
+})
+
+app.get('/isAuthenticated',(req,res)=>{
+  res.json({isAuthenticated:req.isAuthenticated()});
 });
 app.get('/failure',(req,res)=>{
 
