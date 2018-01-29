@@ -1,5 +1,5 @@
 
-
+var cookieSession = require('cookie-session')
 const cors = require('cors');
 const passport = require('passport');
 const session = require('express-session');
@@ -13,13 +13,14 @@ const fs = require('fs');
 const bycrypt = require('bcryptjs');
 const local = require('passport-local').Strategy;
 const app = express();
-var MySQLStore=require('express-mysql-session')(session);
+
+var MySQLStore = require('express-mysql-session')(session);
 var options = {
-     host: 'mysql7002.site4now.net',
+    host: 'mysql7002.site4now.net',
     user: 'loaqey4v_nandhu',
     password: 'nandhu',
     database: 'loaqey4v_testnkdb'
- 
+
 };
 var sessionStore = new MySQLStore(options);
 const connect = mysql.createPool({
@@ -27,8 +28,8 @@ const connect = mysql.createPool({
     user: 'loaqey4v_nandhu',
     password: 'nandhu',
     database: 'loaqey4v_testnkdb',
-    native    : true,
-    pool       : { maxConnections: 50, maxIdleTime: 30}
+    native: true,
+    pool: { maxConnections: 50, maxIdleTime: 30 }
 });
 const UPLOAD_PATH = 'uploads';
 const storage = multer.diskStorage({
@@ -75,24 +76,42 @@ connect.query(typeTable, (err, result, fields) => {
     }
 });
 
+app.get('/', function(req, res) {
+  console.log("Cookies: ", req.cookies)
+})
+var sessionOpts = {
+  saveUninitialized: true, // saved new sessions
+  resave: false, // do not automatically write to the session store
+  store: sessionStore,
+  secret: "siva",
+  cookie : { httpOnly: true, maxAge: 2419200000 } // configure when sessions expires
+}
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(cookie());
-app.use(session({secret:'secret',
-resave:false,
-saveUninitialized:true,
- store: sessionStore
-}));
+app.use(cookie('library'));
+app.set('trust proxy', 1)
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2'],
+  maxAge: 2419200000
+}))
+
+// Update a value in the cookie so that the set-cookie will be sent.
+// Only changes every minute so that it's not sent with every request.
+app.use(function (req, res, next) {
+  req.session.nowInMinutes = Math.floor(Date.now() / 60e3)
+  next()
+})
+app.use(session(sessionOpts));
+
 app.use(passport.initialize());
 app.use(passport.session());
-passport.use(new local(
-  function(userid, done) {
-    console.log('local strategy called with: %s', userid);
-    return done(null, {userid});
-  }));
+
 // cross origin mioddleware
 app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Origin", "http://demosportsapp.s3-website.ap-south-1.amazonaws.com");
+    res.header("Access-Control-Allow-Credentials", 'true');
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS')
     next();
@@ -475,47 +494,47 @@ app.get('/get/banner', (req, res) => {
         }
 
         let query = "select b.banneractive,b.id,b.title,b.imgageid,bm.image,b.description,b.created from banner b join bannermaster bm on b.imgageid = bm.id where b.isactive = 0";
-        
-            connection.query(query, (err, row) => {
-        
-        
-                res.json(row)
-        
-        
-            })
-            connection.release();
+
+        connection.query(query, (err, row) => {
+
+
+            res.json(row)
+
+
+        })
+        connection.release();
     })
-  
+
 })
 app.get('/get/banneractive', (req, res) => {
-    connect.getConnection((err,connection)=>{
-        if(err){
+    connect.getConnection((err, connection) => {
+        if (err) {
             connection.release();
         }
         let query = "select b.banneractive,b.id,b.title,b.imgageid,bm.image,b.description,b.created from banner b join bannermaster bm on b.imgageid = bm.id where b.banneractive = 0";
-        
-            connection.query(query, (err, row) => {
-                if (err) {
-                    res.json(err)
-                }
-        
-                res.json(row)
-        
-        
-            })
-            connection.release();
+
+        connection.query(query, (err, row) => {
+            if (err) {
+                res.json(err)
+            }
+
+            res.json(row)
+
+
+        })
+        connection.release();
     })
 
 })
 
 app.post("/post/banner", (req, res) => {
-    connect.getConnection((err,connection)=>{
-        if(err){
+    connect.getConnection((err, connection) => {
+        if (err) {
             connection.release();
         }
-        
-    let query = "insert into banner set ?";
-    
+
+        let query = "insert into banner set ?";
+
         let data = {
             id: null,
             title: req.body.title,
@@ -523,25 +542,25 @@ app.post("/post/banner", (req, res) => {
             description: req.body.description,
             isactive: 0,
         }
-    
+
         connection.query(query, data, (err, result) => {
             if (err) {
                 res.json(err)
             }
             res.json({ message: "inserted" })
         })
-      connection.release();
+        connection.release();
     })
 
 })
 
 app.put('/update/banner/:id', (req, res) => {
-connect.getConnection((err,connection)=>{
-    if(err){
-        connection.release();
-    }
-    let query = "update banner set imgageid = ?,title = ?,description = ?,banneractive = ?, isactive = 0 where id = ?"
-    
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+        let query = "update banner set imgageid = ?,title = ?,description = ?,banneractive = ?, isactive = 0 where id = ?"
+
         connection.query(query, [req.body.imageid, req.body.title, req.body.description, req.body.banneractive, req.params.id], (err) => {
             if (err) {
                 res.json(err)
@@ -550,19 +569,19 @@ connect.getConnection((err,connection)=>{
         })
 
         connection.release();
-})
+    })
 
 
-    
+
 })
 app.put('/delete/banner/:id', (req, res) => {
-connect.getConnection((err,connection)=>{
-    if(err){
-        connection.release();
-    }
-    
-    let query = "update banner set isactive = 1 where id = ?"
-    
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+
+        let query = "update banner set isactive = 1 where id = ?"
+
         connection.query(query, [req.params.id], (err) => {
             if (err) {
                 res.json(err)
@@ -570,63 +589,63 @@ connect.getConnection((err,connection)=>{
             res.json("deleted")
         })
         connection.release();
-})
+    })
 
 })
 
 app.get('/get/latest/quote', (req, res) => {
-connect.getConnection((err,connection)=>{
-    if(err){
-        connection.release();
-    }
-    let query = "select * from quotes where id in (select max(id) from quotes where isactive=0)"
-    connection.query(query, (err, result) => {
+    connect.getConnection((err, connection) => {
         if (err) {
-            res.json(err)
+            connection.release();
         }
+        let query = "select * from quotes where id in (select max(id) from quotes where isactive=0)"
+        connection.query(query, (err, result) => {
+            if (err) {
+                res.json(err)
+            }
 
-        res.json(result)
+            res.json(result)
+        })
+        connection.release();
     })
-connection.release();
-})
 
-    
+
 })
 
 
 app.get("/get/quotes", (req, res) => {
-connect.getConnection((err,connection)=>{
-    if(err){
-        connection.release();
-    }
-    
-    let query = "select * from quotes where isactive = 0"
-    
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+
+        let query = "select * from quotes where isactive = 0"
+
         connection.query(query, (err, row) => {
             if (err) {
                 return
             }
             res.json(row)
         })
-    
-connection.release();    
-})
+
+        connection.release();
+    })
 })
 
 app.post('/post/quotes', (req, res) => {
-connect.getConnection((err,connection)=>{
-    if(err){
-        connection.release();
-    }
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
 
-    let query = "insert into quotes set ?"
-    
+        let query = "insert into quotes set ?"
+
         let data = {
             id: null,
             author: req.body.author,
             quote: req.body.quote,
         }
-    
+
         connection.query(query, data, (err, result) => {
             if (err) {
                 res.json(err)
@@ -634,33 +653,33 @@ connect.getConnection((err,connection)=>{
             res.json(result)
         })
         connection.release();
-})
+    })
 
 })
 
 app.put('/delete/quote/:id', (req, res) => {
-connect.getConnection((err,connection)=>{
-    if(err){
-        connection.release();
-    }
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
 
-    let query = "update quotes set isactive = 1 where id = ?"
-    
+        let query = "update quotes set isactive = 1 where id = ?"
+
         connection.query(query, [req.params.id], (err, result) => {
             if (err) {
                 res.json(err)
             }
             res.json(result)
         })
-connection.release();    
-})
-    
+        connection.release();
+    })
+
 })
 
 
 app.put('/update/quote/:id', (req, res) => {
-    connect.getConnection((err,connection)=>{
-        if(err){
+    connect.getConnection((err, connection) => {
+        if (err) {
             connection.release();
         }
         let query = "update quotes set author=?,quote=? where id = ?"
@@ -670,36 +689,36 @@ app.put('/update/quote/:id', (req, res) => {
             }
             res.json(result)
         })
-connection.release();    
+        connection.release();
     })
-    
+
 })
 
 
 app.get('/get/arena/:cityid', (req, res) => {
-    connect.getConnection((err,connection)=>{
-        if(err){
-        connection.release();    
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
         }
-        
-    let query = "SELECT a.id as areaid,a.name as arenaname, a.address1, a.address2, a.state, a.const, i.imagurl, c.cityname, s.name as sportsname FROM areana a INNER JOIN citymaster c ON c.id = a.cityid INNER JOIN sportsmaster s ON s.id = a.sportsid INNER JOIN (select * from imagemaster where id in (select min(id)  from imagemaster group by areaid)) i ON i.areaid = a.id where c.id = ?"
-    connection.query(query, [req.params.cityid], (err, row) => {
-        res.json(row)
-    })
+
+        let query = "SELECT a.id as areaid,a.name as arenaname, a.address1, a.address2, a.state, a.const, i.imagurl, c.cityname, s.name as sportsname FROM areana a INNER JOIN citymaster c ON c.id = a.cityid INNER JOIN sportsmaster s ON s.id = a.sportsid INNER JOIN (select * from imagemaster where id in (select min(id)  from imagemaster group by areaid)) i ON i.areaid = a.id where c.id = ?"
+        connection.query(query, [req.params.cityid], (err, row) => {
+            res.json(row)
+        })
         connection.release();
     })
 
 
 });
 
-app.get('/get/court/:areaid',(req,res)=>{
+app.get('/get/court/:areaid', (req, res) => {
 
-    connect.getConnection((err,connection)=>{
-        if(err){
+    connect.getConnection((err, connection) => {
+        if (err) {
             connection.release();
         }
         let query = `select c.id as courtid,c.courtname,a.cityid,a.sportsid,a.name as areaname,a.address1,a.address2,a.state,a.const from courtmaster c inner join areana a on a.id = c.areaid where c.isactive = 0 and c.areaid = ?`
-        connection.query(query,[req.params.areaid],(err,row)=>{
+        connection.query(query, [req.params.areaid], (err, row) => {
             res.json(row)
         })
         connection.release();
@@ -707,52 +726,54 @@ app.get('/get/court/:areaid',(req,res)=>{
 
 })
 
-app.get('/get/:weekid/:courtid/:areaid',(req,res)=>{
-    
-        connect.getConnection((err,connection)=>{
-            if(err){
-                connection.release();
-            }
-            let query = ` call getweekslot(?,?,?);            `
-            connection.query(query,[req.params.weekid,req.params.courtid,req.params.areaid],(err,row)=>{
-                res.json(row[0])
-            })
-            connection.release();
-        })
-    
-    })
+app.get('/get/:weekid/:courtid/:areaid', (req, res) => {
 
-app.post('/signup',(req,res)=>{
-    query = "select * from user where emailid = ?";
-password = req.body.password
-bycrypt.genSalt(10,(err,salt)=>{
-    bycrypt.hash(password,salt,(err,hash)=>{
-        password = hash
-    })
-})
-    connect.getConnection((err,connection)=>{
-        if(err){
+    connect.getConnection((err, connection) => {
+        if (err) {
             connection.release();
         }
-        
-        connection.query(query,[req.body.email],(err,row)=>{
-            if(row.length == 0){
-                query2 ="insert into user set ?"
-                user ={
-                    "id":null,
-                    "emailid" : req.body.email,
-                    "password" :password,
+        let query = ` call getweekslot(?,?,?);            `
+        connection.query(query, [req.params.weekid, req.params.courtid, req.params.areaid], (err, row) => {
+            res.json(row[0])
+        })
+        connection.release();
+    })
+
+})
+
+app.post('/signup', (req, res) => {
+    query = "select * from user where emailid = ?";
+    password = req.body.password
+    console.log(req.body.password);
+    bycrypt.genSalt(10, (err, salt) => {
+        bycrypt.hash(password, salt, (err, hash) => {
+            password = hash
+        })
+    })
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+
+        connection.query(query, [req.body.email], (err, row) => {
+            console.log(req.body.email);
+            if (row.length == 0) {
+                query2 = "insert into user set ?"
+                user = {
+                    "id": null,
+                    "emailid": req.body.email,
+                    "password": password,
                     "isactive": 0
                 }
-                connection.query(query2,user,(err,results)=>{
-                    if(err){
+                connection.query(query2, user, (err, results) => {
+                    if (err) {
                         connection.release();
-                        
+
                     }
-                    
-			       res.json(results);
+
+                    res.json(results);
                 })
-            }else{
+            } else {
                 res.json("user already exist");
             }
         })
@@ -763,31 +784,41 @@ bycrypt.genSalt(10,(err,salt)=>{
 
 })
 
-app.post('/login',(req,res)=>{
+app.post('/login',passport.authenticate('local'), (req, res) => {
+    debugger;
     query = "select * from user where emailid = ?";
-password = req.body.password
-bycrypt.genSalt(10,(err,salt)=>{
-    bycrypt.hash(password,salt,(err,hash)=>{
-        password = hash
+    password = req.body.password
+    bycrypt.genSalt(10, (err, salt) => {
+        bycrypt.hash(password, salt, (err, hash) => {
+            password = hash
+        })
     })
-})
-    connect.getConnection((err,connection)=>{
-        if(err){
+    connect.getConnection((err, connection) => {
+        if (err) {
             connection.release();
         }
         console.log(req.body.email);
-        connection.query(query,[req.body.email],(err,row)=>{
-            if(row.length >0){
-                req.login(row[0].id,function(error){
-                            console.log("sdfsd"+req.user);
-                            console.log(req.isAuthenticated());
-                            if(error)
-                                res.json(error);
-                            
-                        });
-                    res.json(row[0]);
-              
-            }else{
+        connection.query(query, [req.body.email], (err, row) => {
+            if (row.length > 0) {
+                 var test =  JSON.parse(JSON.stringify(row));
+                 var user1 =test[0];
+                 console.log(user1.id);
+          //   passport.authenticate('local', function (err, user, info) {
+                     
+        //      if (err) { return next(err) }
+                   req.login(user1, function (error) {
+                       console.log('loca3');
+                        console.log("sdfsdnew" + req.user.id);
+                     console.log(req.isAuthenticated());
+                     //req.session.user = user;
+                     if (error)
+                           res.json(error);
+
+                   });
+                    res.json(req.isAuthenticated());
+                  //    });
+                
+            } else {
                 res.json("user does not exist");
             }
         })
@@ -798,12 +829,18 @@ bycrypt.genSalt(10,(err,salt)=>{
 
 })
 
-app.get('/isAuthenticated',(req,res)=>{
-  res.json({isAuthenticated:req.isAuthenticated()});
+app.get('/isAuthenticated',   (req, res) => {
+   if (req.isAuthenticated()) {
+       res.json(req.isAuthenticated());
+    }
+    else {
+        res.json(req.isAuthenticated());
+    }
+
 });
-app.get('/failure',(req,res)=>{
+app.get('/failure', (req, res) => {
 
-res.json({msg:"login failed"});
+    res.json({ msg: "login failed" });
 
 })
 
@@ -815,35 +852,88 @@ res.json({msg:"login failed"});
 
 
 
-passport.use( new local({
-    userid:'id',
-    passwordField:'password'
-},(username,password)=>{
-    var user ={
-        username : username,
-        password : password
-    };
-    done(null,user)
-}))
+passport.use('local', new local({
+
+    usernameField: 'email',
+
+    passwordField: 'password',
+
+    passReqToCallback: true //passback entire req to call back
+}, function (req, username, password, done) {
+
+
+    if (!username || !password) { return done(null, false); }
+
+    var salt = '7fa73b47df808d36c5fe328546ddef8b9011b2c6';
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+    connection.query("select * from user where emailid = ?", [username], function (err, rows) {
+
+        console.log("est"); console.log(JSON.stringify(rows));
+
+        if (err)return done(err, false); 
+
+        if (!rows.length) { return done(null, false); }
+
+        //    salt = salt+''+password;
+
+        //   var encPassword = crypto.createHash('sha1').update(salt).digest('hex');
+
+
+        var dbPassword =  JSON.parse(JSON.stringify(rows));
+        console.log(dbPassword[0].PASSWORD);
+        console.log(password);
+        if (!(dbPassword[0].PASSWORD == password)) {
+
+            return done(null, false);
+
+        }
+
+        return done(null, rows[0]);
+
+   
+         });
+     connection.release()
+     });
+
+}
+
+));
 
 
 
 
+passport.serializeUser(function (user, done) {
+  console.log('seriallize');
+  console.log(user);
+    done(null, user.id);
 
-passport.serializeUser((userid,done)=>{
-    done(null,userid);
-})
-passport.deserializeUser((userid,done)=>{
-    done(null,userid);
-})
+});
 
+passport.deserializeUser(function (id, done) {
+     console.log('deseriallize');
+ connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+    connection.query("select * from user where id = " + id, function (err, rows) {
+
+        done(err, rows[0]);
+
+    });
+     connection.release()
+       });
+
+});
 
 // Using port 5000 or environmental port
 const port = process.env.PORT || 5000;
 
 app.listen(port, () => {
     console.log("Server started ...")
-}); 
+});
 
 function isLoggedIn(req, res, next) {
 
@@ -853,14 +943,14 @@ function isLoggedIn(req, res, next) {
 
     res.json("not logged in");
     // if they aren't redirect them to the home page
-   // res.redirect('/');
+    // res.redirect('/');
 }
-app.get('/logout', function(req, res) {
-        req.logout();
-        res.json("logged out");
-     //   res.redirect('/');
-    });
+app.get('/logout', function (req, res) {
+    req.logout();
+    res.json("logged out");
+    //   res.redirect('/');
+});
 
-        app.get('/profile', isLoggedIn, function(req, res) {
-         res.json("s working");
-    });
+app.get('/profile', isLoggedIn, function (req, res) {
+    res.json("s working");
+});
