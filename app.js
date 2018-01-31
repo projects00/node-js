@@ -110,7 +110,7 @@ app.use(passport.session());
 
 // cross origin mioddleware
 app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "http://demosportsapp.s3-website.ap-south-1.amazonaws.com");
+    res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Credentials", 'true');
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS')
@@ -815,7 +815,7 @@ app.post('/login',passport.authenticate('local'), (req, res) => {
                            res.json(error);
 
                    });
-                    res.json(req.isAuthenticated());
+                  res.json(user1);
                   //    });
                 
             } else {
@@ -954,3 +954,34 @@ app.get('/logout', function (req, res) {
 app.get('/profile', isLoggedIn, function (req, res) {
     res.json("s working");
 });
+
+
+///cardApp
+
+app.post("/Add/cardtheme", (req, res) => {
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+
+        let query = "insert into cardtheme set ?";
+
+        let data = {
+            id: null,
+            Name: req.body.name,
+            imageid: req.body.imageid,
+            Message: req.body.message,
+            isactive: req.body.isactive,
+            cardcss:req.body.cardcss
+        }
+
+        connection.query(query, data, (err, result) => {
+            if (err) {
+                res.json(err)
+            }
+            res.json({ message: "inserted" })
+        })
+        connection.release();
+    })
+
+})
