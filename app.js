@@ -985,3 +985,19 @@ app.post("/Add/cardtheme", (req, res) => {
     })
 
 })
+
+app.get('/get/cardtheme', (req, res) => {
+
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+          let query = "select * from cardtheme where isactive = 0";
+         
+        connection.query(query, (err, row) => {
+            res.json(row[0])
+        })
+        connection.release();
+    })
+
+})
