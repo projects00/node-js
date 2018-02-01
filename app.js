@@ -992,10 +992,66 @@ app.get('/get/cardtheme', (req, res) => {
         if (err) {
             connection.release();
         }
-          let query = "select * from cardtheme where isactive = 0";
+          let query = "select * from cardtheme where deleted=0";
          
         connection.query(query, (err, row) => {
-            res.json(row[0])
+            res.json(row)
+        })
+        connection.release();
+    })
+
+})
+
+app.get('/get/editcardtheme', (req, res) => {
+
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+          let query = "select * from cardtheme";
+         
+        connection.query(query, (err, row) => {
+            res.json(row)
+        })
+        connection.release();
+    })
+
+})
+
+app.put('/update/cardtheme/:id', (req, res) => {
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+        let query = "update cardtheme set name = ?,message = ?,cardCss = ?, isactive = ? where id = ?"
+
+        connection.query(query,  [req.body.name, req.body.message, req.body.cardcss, req.body.isactive,req.params.id], (err) => {
+            if (err) {
+                res.json(err)
+            }
+            res.json("updated")
+        })
+
+        connection.release();
+    })
+
+
+
+})
+
+app.put('/delete/cardtheme/:id', (req, res) => {
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+
+        let query = "update cardtheme set deleted = 1 where id = ?"
+
+        connection.query(query, [req.params.id], (err) => {
+            if (err) {
+                res.json(err)
+            }
+            res.json("deleted")
         })
         connection.release();
     })
