@@ -441,6 +441,7 @@ app.get("/get/img", (req, res) => {
 
                 // no error occured, continue on
                 console.log('4/2=' + result)
+                console.log('4/2=' + result)
             }
             res.json(result)
         })
@@ -1023,7 +1024,7 @@ app.put('/update/cardtheme/:id', (req, res) => {
         if (err) {
             connection.release();
         }
-        let query = "update cardtheme set name = ?,message = ?,cardCss = ?, isactive = ? where id = ?"
+        let query = "update cardtheme set imageId = ? name = ?,message = ?,cardCss = ?, isactive = ? where id = ?"
 
         connection.query(query,  [req.body.name, req.body.message, req.body.cardcss, req.body.isactive,req.params.id], (err) => {
             if (err) {
