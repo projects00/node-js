@@ -103,14 +103,14 @@ app.use(function (req, res, next) {
   req.session.nowInMinutes = Math.floor(Date.now() / 60e3)
   next()
 })
-app.use(session(sessionOpts));
+//app.use(session(sessionOpts));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
 // cross origin mioddleware
 app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Origin", "http://demosportsapp.s3-website.ap-south-1.amazonaws.com");
     res.header("Access-Control-Allow-Credentials", 'true');
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS')
@@ -947,8 +947,12 @@ function isLoggedIn(req, res, next) {
     // res.redirect('/');
 }
 app.get('/logout', function (req, res) {
+    console.log(req.isAuthenticated);
     req.logout();
-    res.json("logged out");
+ console.log(req.isAuthenticated);
+  res.json("logged out");
+
+    
     //   res.redirect('/');
 });
 
