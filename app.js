@@ -110,7 +110,7 @@ app.use(passport.session());
 
 // cross origin mioddleware
 app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "http://demosportsapp.s3-website.ap-south-1.amazonaws.com");
+    res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Credentials", 'true');
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS')
@@ -1014,6 +1014,23 @@ app.get('/get/editcardtheme', (req, res) => {
             connection.release();
         }
           let query = "select * from cardtheme";
+         
+        connection.query(query, (err, row) => {
+            res.json(row)
+        })
+        connection.release();
+    })
+
+})
+
+
+app.get('/get/defaultSetting', (req, res) => {
+
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+          let query = "select * from defaultsetting where isactive=0";
          
         connection.query(query, (err, row) => {
             res.json(row)
