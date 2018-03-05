@@ -76,15 +76,15 @@ connect.query(typeTable, (err, result, fields) => {
     }
 });
 
-app.get('/', function(req, res) {
-  console.log("Cookies: ", req.cookies)
+app.get('/', function (req, res) {
+    console.log("Cookies: ", req.cookies)
 })
 var sessionOpts = {
-  saveUninitialized: true, // saved new sessions
-  resave: false, // do not automatically write to the session store
-  store: sessionStore,
-  secret: "siva",
-  cookie : { httpOnly: true, maxAge: 2419200000 } // configure when sessions expires
+    saveUninitialized: true, // saved new sessions
+    resave: false, // do not automatically write to the session store
+    store: sessionStore,
+    secret: "siva",
+    cookie: { httpOnly: true, maxAge: 2419200000 } // configure when sessions expires
 }
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -92,16 +92,16 @@ app.use(bodyParser.json());
 app.use(cookie('library'));
 app.set('trust proxy', 1)
 app.use(cookieSession({
-  name: 'session',
-  keys: ['key1', 'key2'],
-  maxAge: 2419200000
+    name: 'session',
+    keys: ['key1', 'key2'],
+    maxAge: 2419200000
 }))
 
 // Update a value in the cookie so that the set-cookie will be sent.
 // Only changes every minute so that it's not sent with every request.
 app.use(function (req, res, next) {
-  req.session.nowInMinutes = Math.floor(Date.now() / 60e3)
-  next()
+    req.session.nowInMinutes = Math.floor(Date.now() / 60e3)
+    next()
 })
 //app.use(session(sessionOpts));
 
@@ -785,7 +785,7 @@ app.post('/signup', (req, res) => {
 
 })
 
-app.post('/login',passport.authenticate('local'), (req, res) => {
+app.post('/login', passport.authenticate('local'), (req, res) => {
     debugger;
     query = "select * from user where emailid = ?";
     password = req.body.password
@@ -801,24 +801,24 @@ app.post('/login',passport.authenticate('local'), (req, res) => {
         console.log(req.body.email);
         connection.query(query, [req.body.email], (err, row) => {
             if (row.length > 0) {
-                 var test =  JSON.parse(JSON.stringify(row));
-                 var user1 =test[0];
-                 console.log(user1.id);
-          //   passport.authenticate('local', function (err, user, info) {
-                     
-        //      if (err) { return next(err) }
-                   req.login(user1, function (error) {
-                       console.log('loca3');
-                        console.log("sdfsdnew" + req.user.id);
-                     console.log(req.isAuthenticated());
-                     //req.session.user = user;
-                     if (error)
-                           res.json(error);
+                var test = JSON.parse(JSON.stringify(row));
+                var user1 = test[0];
+                console.log(user1.id);
+                //   passport.authenticate('local', function (err, user, info) {
 
-                   });
-                  res.json(user1);
-                  //    });
-                
+                //      if (err) { return next(err) }
+                req.login(user1, function (error) {
+                    console.log('loca3');
+                    console.log("sdfsdnew" + req.user.id);
+                    console.log(req.isAuthenticated());
+                    //req.session.user = user;
+                    if (error)
+                        res.json(error);
+
+                });
+                res.json(user1);
+                //    });
+
             } else {
                 res.json("user does not exist");
             }
@@ -830,9 +830,9 @@ app.post('/login',passport.authenticate('local'), (req, res) => {
 
 })
 
-app.get('/isAuthenticated',   (req, res) => {
-   if (req.isAuthenticated()) {
-       res.json(req.isAuthenticated());
+app.get('/isAuthenticated', (req, res) => {
+    if (req.isAuthenticated()) {
+        res.json(req.isAuthenticated());
     }
     else {
         res.json(req.isAuthenticated());
@@ -870,34 +870,34 @@ passport.use('local', new local({
         if (err) {
             connection.release();
         }
-    connection.query("select * from user where emailid = ?", [username], function (err, rows) {
+        connection.query("select * from user where emailid = ?", [username], function (err, rows) {
 
-        console.log("est"); console.log(JSON.stringify(rows));
+            console.log("est"); console.log(JSON.stringify(rows));
 
-        if (err)return done(err, false); 
+            if (err) return done(err, false);
 
-        if (!rows.length) { return done(null, false); }
+            if (!rows.length) { return done(null, false); }
 
-        //    salt = salt+''+password;
+            //    salt = salt+''+password;
 
-        //   var encPassword = crypto.createHash('sha1').update(salt).digest('hex');
+            //   var encPassword = crypto.createHash('sha1').update(salt).digest('hex');
 
 
-        var dbPassword =  JSON.parse(JSON.stringify(rows));
-        console.log(dbPassword[0].PASSWORD);
-        console.log(password);
-        if (!(dbPassword[0].PASSWORD == password)) {
+            var dbPassword = JSON.parse(JSON.stringify(rows));
+            console.log(dbPassword[0].PASSWORD);
+            console.log(password);
+            if (!(dbPassword[0].PASSWORD == password)) {
 
-            return done(null, false);
+                return done(null, false);
 
-        }
+            }
 
-        return done(null, rows[0]);
+            return done(null, rows[0]);
 
-   
-         });
-     connection.release()
-     });
+
+        });
+        connection.release()
+    });
 
 }
 
@@ -907,25 +907,25 @@ passport.use('local', new local({
 
 
 passport.serializeUser(function (user, done) {
-  console.log('seriallize');
-  console.log(user);
+    console.log('seriallize');
+    console.log(user);
     done(null, user.id);
 
 });
 
 passport.deserializeUser(function (id, done) {
-     console.log('deseriallize');
- connect.getConnection((err, connection) => {
+    console.log('deseriallize');
+    connect.getConnection((err, connection) => {
         if (err) {
             connection.release();
         }
-    connection.query("select * from user where id = " + id, function (err, rows) {
+        connection.query("select * from user where id = " + id, function (err, rows) {
 
-        done(err, rows[0]);
+            done(err, rows[0]);
 
+        });
+        connection.release()
     });
-     connection.release()
-       });
 
 });
 
@@ -949,10 +949,10 @@ function isLoggedIn(req, res, next) {
 app.get('/logout', function (req, res) {
     console.log(req.isAuthenticated);
     req.logout();
- console.log(req.isAuthenticated);
-  res.json("logged out");
+    console.log(req.isAuthenticated);
+    res.json("logged out");
 
-    
+
     //   res.redirect('/');
 });
 
@@ -977,7 +977,7 @@ app.post("/Add/cardtheme", (req, res) => {
             imageid: req.body.imageid,
             Message: req.body.message,
             isactive: req.body.isactive,
-            cardcss:req.body.cardcss
+            cardcss: req.body.cardcss
         }
 
         connection.query(query, data, (err, result) => {
@@ -991,14 +991,205 @@ app.post("/Add/cardtheme", (req, res) => {
 
 })
 
+///cardApp
+
+app.post("/Add/activecard", (req, res) => {
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+
+        let query = "insert into activecard set ?";
+
+        let data = {
+            id: null,
+            Name: req.body.name,
+            imageid: req.body.imageid,
+            Message: req.body.message,
+            isactive: req.body.isactive,
+            cardcss: req.body.cardcss,
+             activeurl: req.body.activeurl
+        }
+
+        connection.query(query, data, (err, result) => {
+            if (err) {
+                res.json(err)
+            }
+            res.json({ message: "inserted" })
+        })
+        connection.release();
+    })
+
+})
+
+app.post("/do/booking", (req, res) => {
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+
+        let query = "call saveBooking(?,?,?,?,?,?,?,?)";
+
+       
+        connection.query(query,  [ req.body.slotid, req.body.courtid,req.body.custid,req.body.reward,req.body.couponcode,req.body.couponamt,req.body.totalamount,req.body.transactionid], (err, result) => {
+            if (err) {
+                res.json(err)
+            }
+            res.json({ message: "inserted" })
+        })
+        connection.release();
+    })
+
+})
+
+app.post("/do/cart", (req, res) => {
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+
+        let query = "call saveCart(?,?,?,?)";
+
+       
+        connection.query(query,  [ req.body.slotid, req.body.courtid,req.body.custid,req.body.transactionid], (err, result) => {
+            if (err) {
+                res.json(err)
+            }
+            res.json({ message: "inserted" })
+        })
+        connection.release();
+    })
+
+})
+
+
+app.get('/get/booking', (req, res) => {
+
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+        let query = "select * from booking";
+
+        connection.query(query, (err, row) => {
+            res.json(row)
+        })
+        connection.release();
+    })
+
+})
+
+app.get('/get/cart', (req, res) => {
+
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+        let query = "select * from cart";
+
+        connection.query(query, (err, row) => {
+            res.json(row)
+        })
+        connection.release();
+    })
+
+})
+
+
+app.get('/get/rewardsummary/:id', (req, res) => {
+
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+        let query = "select * from rewardsummary where custid=?";
+
+        connection.query(query,[req.params.id] ,(err, row) => {
+            res.json(row)
+        })
+        connection.release();
+    })
+
+})
+
+app.get('/get/couponmaster', (req, res) => {
+
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+        let query = "select * from couponmaster where isactive=0";
+
+        connection.query(query ,(err, row) => {
+            res.json(row)
+        })
+        connection.release();
+    })
+
+})
+
+app.get('/get/orderhistory/:id', (req, res) => {
+
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+        let query = "select * from orderhistory where custid=?";
+
+        connection.query(query,[req.params.id] ,(err, row) => {
+            res.json(row)
+        })
+        connection.release();
+    })
+
+})
+
+
+app.put('/update/reward/:id', (req, res) => {
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+        let query = "update rewardmaster set used = ?  where id = ?"
+
+        connection.query(query, [req.body.used,  req.params.id], (err) => {
+            if (err) {
+                res.json(err)
+            }
+            res.json("updated")
+        })
+
+        connection.release();
+    })
+
+})
+
+
+
 app.get('/get/cardtheme', (req, res) => {
 
     connect.getConnection((err, connection) => {
         if (err) {
             connection.release();
         }
-          let query = "select * from cardtheme where deleted=0";
-         
+        let query = "select * from cardtheme where deleted=0";
+
+        connection.query(query, (err, row) => {
+            res.json(row)
+        })
+        connection.release();
+    })
+
+})
+
+app.get('/get/activecard', (req, res) => {
+
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+        let query = "select * from activecard where deleted=0";
+
         connection.query(query, (err, row) => {
             res.json(row)
         })
@@ -1013,8 +1204,8 @@ app.get('/get/editcardtheme', (req, res) => {
         if (err) {
             connection.release();
         }
-          let query = "select * from cardtheme";
-         
+        let query = "select * from cardtheme";
+
         connection.query(query, (err, row) => {
             res.json(row)
         })
@@ -1030,8 +1221,24 @@ app.get('/get/defaultSetting', (req, res) => {
         if (err) {
             connection.release();
         }
-          let query = "select * from defaultsetting where isactive=0";
-         
+        let query = "select * from defaultsetting where isactive=0";
+
+        connection.query(query, (err, row) => {
+            res.json(row)
+        })
+        connection.release();
+    })
+
+})
+
+app.get('/get/cardthemes', (req, res) => {
+
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+        let query = "select *  from cardtheme where deleted=0";
+
         connection.query(query, (err, row) => {
             res.json(row)
         })
@@ -1047,7 +1254,7 @@ app.put('/update/cardtheme/:id', (req, res) => {
         }
         let query = "update cardtheme set imageId = ? name = ?,message = ?,cardCss = ?, isactive = ? where id = ?"
 
-        connection.query(query,  [req.body.name, req.body.message, req.body.cardcss, req.body.isactive,req.params.id], (err) => {
+        connection.query(query, [req.body.name, req.body.message, req.body.cardcss, req.body.isactive, req.params.id], (err) => {
             if (err) {
                 res.json(err)
             }
@@ -1056,8 +1263,6 @@ app.put('/update/cardtheme/:id', (req, res) => {
 
         connection.release();
     })
-
-
 
 })
 
@@ -1079,3 +1284,56 @@ app.put('/delete/cardtheme/:id', (req, res) => {
     })
 
 })
+
+
+app.get('/get/coupon/:coupon', (req, res) => {
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+
+        let query = "SELECT IF(expdate-now()>0 ,amount,0) as amt from couponmaster where coupon= ? and expdate-now()>0"
+        connection.query(query, [req.params.coupon], (err, row) => {
+            res.json(row)
+        })
+        connection.release();
+    })
+
+
+});
+
+app.get('/get/reward/:userid', (req, res) => {
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+
+        let query = "SELECT points-used as balance,used  from rewardmaster where userid= ?"
+        connection.query(query, [req.params.userid], (err, row) => {
+            res.json(row)
+        })
+        connection.release();
+    })
+
+
+});
+
+app.put('/update/reward/:id', (req, res) => {
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+
+        let query = "update rewardmaster set used =  ? where id = ?"
+
+        connection.query(query, [req.body.used, req.params.id], (err) => {
+            if (err) {
+                res.json(err)
+            }
+            res.json("updated")
+        })
+        connection.release();
+    })
+
+})
+
