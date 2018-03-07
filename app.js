@@ -718,7 +718,7 @@ app.get('/get/activecard/:uniqueurl', (req, res) => {
             connection.release();
         }
 
-        let query = "SELECT * FROM activecard where activeurl = ?"
+        let query = "SELECT * FROM activecard where uniqueid = ?"
         connection.query(query, [req.params.uniqueurl], (err, row) => {
             res.json(row)
         })
