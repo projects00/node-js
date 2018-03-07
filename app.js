@@ -712,6 +712,22 @@ app.get('/get/arena/:cityid', (req, res) => {
 
 });
 
+app.get('/get/activecard/:uniqueurl', (req, res) => {
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+
+        let query = "SELECT * FROM activecard where activeurl = ?"
+        connection.query(query, [req.params.uniqueurl], (err, row) => {
+            res.json(row)
+        })
+        connection.release();
+    })
+
+
+});
+
 app.get('/get/court/:areaid', (req, res) => {
 
     connect.getConnection((err, connection) => {
