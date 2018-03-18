@@ -1282,6 +1282,25 @@ app.put('/update/cardtheme/:id', (req, res) => {
 
 })
 
+
+app.put('/updatedash/dashimage', (req, res) => {
+    connect.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+        }
+        let query = "update defaultsetting set imageId = ?, ,message = ?, fromname = ? ,toname = ?,intoText=? where id = 1"
+
+        connection.query(query, [req.body.imageid, req.body.message, req.body.fromname, req.body.toname, req.body.intotext], (err) => {
+            if (err) {
+                res.json(err)
+            }
+            res.json("updated")
+        })
+
+        connection.release();
+    })
+
+})
 app.put('/delete/cardtheme/:id', (req, res) => {
     connect.getConnection((err, connection) => {
         if (err) {
