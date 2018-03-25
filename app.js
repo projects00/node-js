@@ -148,6 +148,12 @@ app.get('/new', (req, res) => {
 
 });
 
+
+
+app.get('/test', (req, res) => {
+    res.render("test");
+
+});
 app.post('/insert', (req, res) => {
 
 
