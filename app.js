@@ -143,7 +143,7 @@ app.get('/', (req, res) => {
 
 });
 
-app.post('/new', (req, res) => {
+app.get('/new', (req, res) => {
     res.render("index");
 
 });
