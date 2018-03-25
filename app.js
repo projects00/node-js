@@ -13,6 +13,10 @@ const fs = require('fs');
 const bycrypt = require('bcryptjs');
 const local = require('passport-local').Strategy;
 const app = express();
+var exphbs  = require('express-handlebars');
+
+app.engine('handlebars', exphbs({defaultLayout: 'main'}));
+app.set('view engine', 'handlebars');
 
 var MySQLStore = require('express-mysql-session')(session);
 var options = {
@@ -22,6 +26,8 @@ var options = {
     database: 'loaqey4v_testnkdb'
 
 };
+
+
 var sessionStore = new MySQLStore(options);
 const connect = mysql.createPool({
     host: 'mysql7002.site4now.net',
@@ -137,7 +143,10 @@ app.get('/', (req, res) => {
 
 });
 
+app.post('/new', (req, res) => {
+    res.render("index");
 
+});
 
 app.post('/insert', (req, res) => {
 
@@ -946,7 +955,7 @@ passport.deserializeUser(function (id, done) {
 });
 
 // Using port 5000 or environmental port
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 
 app.listen(port, () => {
     console.log("Server started ...")
